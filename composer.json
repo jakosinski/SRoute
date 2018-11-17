@@ -1,0 +1,17 @@
+{
+    "name": "scythestudio/routing",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jakub Kosinski",
+            "email": "biuro@scythe-studio.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "ScytheStudio\\Routing\\": "src/"
+        }
+    }
+}
