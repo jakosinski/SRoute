@@ -82,6 +82,7 @@ echo RouteHelper::instance()->getRouteUrl("index");
 - Redirects
 - Routing throttle
 - Help functions
+- Much more!
 
 
 
