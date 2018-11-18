@@ -1,7 +1,8 @@
 # SRoute
 SRoute - Fast, powerful routing provider to your applications based on PHP
 
-##Installation
+## Installation
+
 #### Via Composer
 
 	composer require scythestudio/routing
