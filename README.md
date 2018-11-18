@@ -71,7 +71,9 @@ SRoute::get("/", function() {})->name("index")->save();
 
 use ScytheStudio\Routing\RouteHelper;
 
-echo RouteHelper::instance()->getRouteUrl("index"); 
+echo RouteHelper::instance()->getRouteUrl("index");
+
+SRoute::get("/user/{ID}", function($ID) { echo $ID })->name("user_profile")->save();
 
 ```
 
