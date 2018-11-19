@@ -1,7 +1,8 @@
 # SRoute
 SRoute - Fast, powerful routing provider to your applications based on PHP
 
-##Installation
+## Installation
+
 #### Via Composer
 
 	composer require scythestudio/routing
@@ -70,7 +71,9 @@ SRoute::get("/", function() {})->name("index")->save();
 
 use ScytheStudio\Routing\RouteHelper;
 
-echo RouteHelper::instance()->getRouteUrl("index"); 
+echo RouteHelper::instance()->getRouteUrl("index");
+
+SRoute::get("/user/{ID}", function($ID) { echo $ID })->name("user_profile")->save();
 
 //Arguments
 
