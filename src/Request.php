@@ -12,71 +12,55 @@ namespace ScytheStudio\Routing;
 use ScytheStudio\Routing\Exceptions\RouterNotFoundException;
 
 class Request {
-    /**
-     * @var
-     */
-    protected static $_instance;
+    use \ScytheStudio\Routing\InstanceTrait;
 
-    /**
-     * @var
-     */
     protected $route;
-    /**
-     * @var
-     */
+
     protected $server_name;
-    /**
-     * @var
-     */
+
     protected $server_addr;
-    /**
-     * @var
-     */
+
     protected $method;
-    /**
-     * @var string
-     */
-    private $path;
-    /**
-     * @var array
-     */
-    public $back = array();
-    /**
-     * @var bool
-     */
+
+    protected $host;
+
+    protected $files;
+
     protected $ajax = false;
 
+    protected $protocol;
 
-    /**
-     * Request constructor.
-     */
-    public function __construct() {
+    protected $inputs;
+
+    protected $referer;
+
+    private $path;
+
+    
+
+
+
+    protected function __construct() {
         $this->server_name = $_SERVER["SERVER_NAME"];
         $this->method = $_SERVER["REQUEST_METHOD"];
+        $this->protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
         $this->path = isset($_SERVER["PATH_INFO"]) ? $_SERVER["PATH_INFO"] : "/";
-        $this->back = array(
-          "HTTP_REFERER" => isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : null,
-        );
+        $this->host = $_SERVER["HTTP_HOST"];
+
+        $this->files = isset($_FILES) ? $_FILES : array();
+        $this->inputs = isset($_POST) ? $_POST : array();
+
+        $this->referer = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : null;
+
+        if($this->getReferer()) {
+            $_SESSION["old_inputs_data"] = array($this->getReferer() => $this->inputs);
+        }
 
         if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             $this->ajax = true;
         }
     }
 
-    /**
-     * @return mixed
-     */
-    public static function instance() {
-        if (static::$_instance  === null)  static::$_instance = new static;
-
-        return static::$_instance;
-    }
-
-
-    /**
-     * @return mixed
-     * @throws RouterNotFoundException
-     */
     public function matchRoute() {
         $exploded = $this->getPath() == "/" ? [] : ($this->getPath()[strlen($this->getPath())-1] == "/" ? explode("/", substr(ltrim($this->getPath(), "/"), 0, strlen(ltrim($this->getPath(), "/")) - 1)) :  explode("/", ltrim($this->getPath(), "/")));;
         foreach (SRouteCollector::instance()->getRoutes() as $route) {
@@ -84,10 +68,10 @@ class Request {
 
                 if($this->ajax && !$route->needAjax()) throw new RouterNotFoundException();
                 if(!$this->ajax && $route->needAjax()) throw new RouterNotFoundException();
+                if($route->needHTTPS() && $this->getProtocol() != "https://") throw new RouterNotFoundException();
 
                 if(count($exploded) == 0 && count($route->getExplodedUrl()) == 0) {
                     return $route->invokeController();
-                    die();
                 }
 
                 if(count($exploded) == count($route->getExplodedUrl())) {
@@ -96,10 +80,17 @@ class Request {
 
                     foreach ($exploded as $index => $url_part) {
                         if($route->getExplodedUrl()[$index][0] == "{" && $route->getExplodedUrl()[$index][strlen($route->getExplodedUrl()[$index]) - 1] == "}") {
-                           array_push($ARGS, $url_part);
+                            $arg = substr($route->getExplodedUrl()[$index], 1, strlen($route->getExplodedUrl()[$index]) - 2);
+                            if(isset($route->getPatterns()[$arg])) {
+                                if(!@preg_match($route->getPatterns()[$arg], $url_part)) {
+                                    $match = false;
+                                    break;
+                                }
+                            }
+                            array_push($ARGS, $url_part);
                         }
                         else {
-                            if(!$route->getExplodedUrl()[$index] == $url_part) {
+                            if($route->getExplodedUrl()[$index] != $url_part) {
                                 $match = false;
                                 break;
                             }
@@ -109,7 +100,6 @@ class Request {
 
                     if($match) {
                         return $route->invokeController($ARGS);
-                        exit();
                     }
                 }
             }
@@ -117,51 +107,59 @@ class Request {
         throw new RouterNotFoundException();
     }
 
-    /**
-     * @return mixed
-     */
+
     public function getRoute()
     {
         return $this->route;
     }
 
-    /**
-     * @return mixed
-     */
     public function getServerName()
     {
         return $this->server_name;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getServerAddr()
-    {
+    public function getServerAddr() {
         return $this->server_addr;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getMethod()
-    {
+    public function getMethod() {
         return $this->method;
     }
 
-    /**
-     * @return string
-     */
-    public function getPath()
-    {
+    public function getPath() {
         return $this->path;
     }
 
-    /**
-     * @return array
-     */
-    public function getBack()
-    {
-        return $this->back;
+    public function getProtocol() {
+        return $this->protocol;
+    }
+
+    public function getHost() {
+        return $this->host;
+    }
+
+    public function getFiles() {
+        return $this->files;
+    }
+
+    public function getReferer() {
+        return $this->referer;
+    }
+
+    public function file($Name) {
+        return (isset($this->getFiles()[$Name])) ? $this->getFiles()[$Name] : null; 
+    }
+
+    public function getInputs() {
+        return $this->inputs;
+    }
+
+    public function input($Name) {
+        return (isset($this->getInputs()[$Name])) ? $this->getInputs()[$Name] : null;
+    }
+
+    public function old($Name) {
+        $current_link = $this->getProtocol().$this->getHost().$this->getPath();
+        return (isset($_SESSION["old_inputs_data"][$current_link][$Name])) ? $_SESSION["old_inputs_data"][$current_link][$Name] : null;
     }
 }

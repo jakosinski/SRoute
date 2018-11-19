@@ -12,35 +12,14 @@ namespace ScytheStudio\Routing;
 use ScytheStudio\Routing\Exceptions\RouterNameMustBeUnique;
 
 class SRouteCollector {
-    /**
-     * @var
-     */
-    protected static $_instance;
-    /**
-     * @var array
-     */
+    use \ScytheStudio\Routing\InstanceTrait;
+    
     protected $routes;
 
-    /**
-     * SRouteCollector constructor.
-     */
-    public function __construct() {
+    private function __construct() {
         $this->routes = array();
     }
 
-    /**
-     * @return mixed
-     */
-    public static function instance() {
-        if (static::$_instance  === null)  static::$_instance = new static;
-
-        return static::$_instance;
-    }
-
-    /**
-     * @param \ScytheStudio\Routing\SRoute $SRoute
-     * @throws RouterNameMustBeUnique
-     */
     public function add(SRoute $SRoute) {
         foreach ($this->getRoutes() as $route) {
             if($route != $SRoute) {
@@ -54,10 +33,21 @@ class SRouteCollector {
         array_push($this->routes, $SRoute);
     }
 
-    /**
-     * @return array
-     */
     public function getRoutes() {
         return $this->routes;
+    }
+
+    public function length() {
+        return count($this->routes);
+    }
+
+    public function getRoute($Name) {
+        foreach($this->getRoutes() as $route) {
+            if($route->getName() == $Name) {
+                return $route;
+            }
+        }
+
+        return null;
     }
 }

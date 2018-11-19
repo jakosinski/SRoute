@@ -72,11 +72,37 @@ use ScytheStudio\Routing\RouteHelper;
 
 echo RouteHelper::instance()->getRouteUrl("index"); 
 
+//Arguments
+
+SRoute::get("{ID}", function($ID) {
+	echo $ID;
+})->save();
+
+//Regex
+
+SRoute::get("{ID}", function($ID) {})->where(array("ID" => "/^[0-9]+$/"))->save();
+
+//Request
+
+use ScytheStudio\Routing\Request;
+
+<input type="file" name="test_file">
+<input type="text" name="string">
+
+Request::instance()->file("test_file");
+Request::instance()->input("string");
+
+//Admission to old("input") *dont use
+
+Request::instance()->old("string");
+
+
 ```
 
 ## TODO
 - Route groups
 - Route after
+- Unlimited routes
 - Request data from inputs
 - Request "back" data
 - Redirects

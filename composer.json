@@ -1,6 +1,6 @@
 {
     "name": "scythestudio/routing",
-    "type": "project",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {

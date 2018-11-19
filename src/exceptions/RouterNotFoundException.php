@@ -16,5 +16,6 @@ class RouterNotFoundException extends Exception{
     {
         http_response_code(404);
         parent::__construct($message, $code, $previous);
+        die();
     }
 }

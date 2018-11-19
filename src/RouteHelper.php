@@ -9,39 +9,15 @@
 namespace ScytheStudio\Routing;
 
 class RouteHelper {
-    /**
-     * @var
-     */
-    static $_instance;
-
-    /**
-     * @return mixed
-     */
-    public static function instance() {
-        if (static::$_instance  === null)  static::$_instance = new static;
-
-        return static::$_instance;
-    }
+    use \ScytheStudio\Routing\InstanceTrait;
 
 
-    /**
-     * @param $Name
-     * @param array $parameters
-     * @return string
-     */
+
     public function getRouteUrl($Name, $parameters = array()) {
-        $router = null;
-
-        foreach (SRouteCollector::instance()->getRoutes() as $route) {
-            if($route->getName() == $Name) {
-
-                $router = $route;
-                break;
-            }
-        }
-
+        $router = SRouteCollector::instance()->getRoute($Name);
+        $server = Request::instance()->getProtocol().Request::instance()->getHost();
         if($router == null) return "";
-        if($router->getURL() == "/") return $router->getURL();
+        if($router->getURL() == "/") return $server.$router->getURL();
 
         $exploded = array();
 
@@ -66,6 +42,6 @@ class RouteHelper {
             $url = $url.$url_part."/";
         }
 
-        return $url == "" ? "/" : "/".$url;
+        return $url == "" ? $server."/" : $server."/".$url;
     }
 }
