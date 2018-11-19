@@ -14,7 +14,7 @@ SRoute - Fast, powerful routing provider to your applications based on PHP
 ## USAGE
 
 "index.php":
-```
+```php
 require __DIR__.'/vendor/autoload.php';
 
 use ScytheStudio\Routing\SRoute;
@@ -32,7 +32,7 @@ Request::instance()->matchRoute();
 ```
 
 Controller:
-```
+```php
 	namespace Controllers;
 	
 	public class LandingPageController {
